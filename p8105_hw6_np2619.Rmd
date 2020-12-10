@@ -61,8 +61,6 @@ bal_fit = homicide %>%
     ci_lower = exp(estimate - 1.96 * std.error)
   ) %>% 
     select(term, OR, starts_with("ci"))
-  
-  ## NEEDS TO BE ADJUSTED OR for RACE
 ```
 
 #### Map glm across cities
@@ -113,54 +111,67 @@ birthweight is now in lbs.
 ```{r}
 birthweight = read_csv("./data/birthweight.csv") %>% 
   mutate(babysex = as.factor(babysex),
-         bwt = bwt / 454)
+         bwt = bwt / 454,
+         frace = as.factor(frace),
+         malform = as.factor(malform),
+         mrace = as.factor(mrace)
+  )
 ```
 
 #### Explore for my model
 
 ```{r}
-birthweight %>% 
+sex = birthweight %>% 
   ggplot(aes(x = babysex, y = bwt)) + 
   geom_violin()
 
-birthweight %>% 
+income = birthweight %>% 
   ggplot(aes(x = fincome, y = bwt)) + 
   geom_point(aes(alpha = 0.3))
 
-birthweight %>% 
+weight = birthweight %>% 
   ggplot(aes(x = wtgain, y = bwt)) + 
   geom_point(aes(alpha = 0.3))
 
-birthweight %>% 
+smoke = birthweight %>% 
   ggplot(aes(x = smoken, y = bwt)) + 
   geom_point(aes(alpha = 0.3))
+
+sex + income + weight + smoke
 ```
 I chose these variables from a combination of literature, exploratory visualizations and pure interest. From visualizations, it looks like there is a slight difference in birthweight between male and female babies. I hypothesize that there is some connection between weight gain and baby weight. Finally, there is literature that supports maternal smoking and socioeconomic influence on health and contribution to birthweight. I will develop a regression model to evaluate whether there is a influence of sex, income smoking and weight gain on birthweight. 
 
-#### Fit my model
+#### My proposed model
 
 ```{r}
 my_mod = lm(bwt ~ babysex + fincome + wtgain + smoken, data = birthweight) 
 
 my_mod %>% 
-  broom::tidy() %>% 
+  broom::tidy() %>%
+  knitr::kable()
+
+broom::glance(my_mod) %>% 
   knitr::kable()
 ```
 From this linear regression, we see baby sex, financial income, weight gain and smoking have p-values lower than 0.05, and are considered significant. 
 
 #### Look at residuals
 ```{r}
-birthweight %>% 
-  modelr::add_residuals(my_mod) %>% 
-  ggplot(aes(x = babysex, y = resid)) + 
-  geom_violin() 
-
-birthweight %>% 
+scatter = birthweight %>% 
   modelr::add_residuals(my_mod) %>% 
   modelr::add_predictions(my_mod) %>% 
   ggplot(aes(x = pred, y = resid)) + 
   geom_point(alpha = 0.3) 
+
+violin = birthweight %>% 
+  modelr::add_residuals(my_mod) %>% 
+  modelr::add_predictions(my_mod) %>% 
+  ggplot(aes(x = pred, y = resid)) + 
+  geom_violin() 
+
+scatter + violin
 ```
+The residuals on the scatter look good. They are random, there aren't any clear patterns or clusters.  From the violin plot, we do see that this holds pretty true, with some residuals on the lower and upper extremes.  But, nobody (baby) is perfect.
 
 
 
@@ -264,12 +275,12 @@ weather_boot_quantiles = weather_boot_estimates %>%
     ci_upper_log = quantile(log_val, 0.075)
   )
 
-#knitr::kable(weather_boot_quantiles)
+knitr::kable(weather_boot_quantiles)
 ```
 
-We can see these bootstrap values for rsquared center around 0.91, with a seemingly normal curve, possibly skewed to the left, with a greater density of values centered at 0.91. The confidence interval for bootstrap rsquared values are `r pull(weather_boot_quantiles(ci_lower_r))` to `r pull(weather_boot_quantiles(ci_upper_r))`.  
+We can see these bootstrap values for rsquared center around 0.91, with a seemingly normal curve, possibly skewed to the left, with a greater density of values centered at 0.91. The confidence interval for bootstrap rsquared values are `r weather_boot_quantiles %>% pull(ci_lower_r)` to `r weather_boot_quantiles %>% pull(ci_upper_r)`.  
 
-For the log of intercept * slope, we also see a  normal distribution of bootstrap values, centered around 2.025.  Again we see a greater density around the center values. The confidence interval for bootstrap log(slope * intercept) values are `r pull(weather_boot_quantiles(ci_lower_log))` to `r pull(weather_boot_quantiles(ci_upper_log))`.
+For the log of intercept * slope, we also see a  normal distribution of bootstrap values, centered around 2.025.  Again we see a greater density around the center values. The confidence interval for bootstrap log(slope * intercept) values are `r weather_boot_quantiles %>% pull(ci_lower_log)` to `r weather_boot_quantiles %>% pull(ci_upper_log)`.
 
 
 
