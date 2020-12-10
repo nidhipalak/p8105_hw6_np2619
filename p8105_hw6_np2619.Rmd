@@ -245,7 +245,24 @@ cv_df %>%
   ggplot(aes(x = model, y = rmse)) +
   geom_violin()
 ```
+Lower values of RMSE indicate better fit, and from these plots, we can clearly say that my model is the worst fit of the bunch.  When visualizing variables included in the example models, we saw more linearity than in the visualizations I plotted for my model.  This was my first indication that my model would not fit the model as well as the example models have.  This was a fun model to build, and a great way to understand what to look for when building a model. 
 
+#### Summarize RMSE
+
+```{r}
+cv_df %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "model",
+    values_to = "rmse",
+    names_prefix = "rmse_"
+  ) %>% 
+  group_by(model) %>% 
+  summarize(avg_rmse = mean(rmse)) %>% 
+  knitr::kable()
+```
+As we can see with the average RMSEs, the example models faired far better in goodness of fit than my model did.
 
 ## Problem 3
 
