@@ -1,0 +1,58 @@
+---
+title: "Homework 6"
+author: "Nidhi Patel"
+date: "12/9/2020"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+library(modelr)
+library(mgcv)
+library(p8105.datasets)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.height = 6,
+  out.width = "90%")
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+## Problem 1
+
+#### Read in Data + make vars we want
+
+```{r}
+homicide = read_csv("./data/homicide-data.csv") %>% 
+  unite(city_state, c("city", "state"), sep = "_") %>% 
+  filter(city_state != "Tulsa_AL",
+         victim_race %in% c("White", "Black"),
+         victim_age != "Unknown") %>% 
+  mutate(victim_age = as.numeric(victim_age),
+         victim_sex = as.factor(victim_sex),
+         victim_race = as.factor(victim_race),
+         solved = ifelse(disposition == "Closed by arrest", rep("Resolved"), "Unresolved"),
+         solved = as.factor(solved))
+```
+
+This dataset contains `r ncol(homicide)` variables with `r nrow(homicide)` observations.  Each homicide is distinguished by an unique id, contains basic demographic information about the victim, the location and reported date of the murder, and whether an arrest was made. 
+
+#### Fit GLM
+
+```{r}
+# fit = glm(solved ~ victim_age + victim_sex + victim_race, data = homicide) 
+# 
+# broom::tidy(fit)
+```
+
+
+
