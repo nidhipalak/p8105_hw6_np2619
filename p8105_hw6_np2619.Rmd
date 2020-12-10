@@ -212,10 +212,10 @@ weather_df %>%
 ```
 It looks prettty linear. 
 
-#### Bootstrap 10 values
+#### Bootstrap 5000 values
 ```{r}
 weather_boot_results = weather_df %>%
-  bootstrap(10, id = "num") %>% 
+  bootstrap(5000, id = "num") %>% 
   mutate(
     models = map(.x = strap, ~lm(tmax ~ tmin, data = .x)), 
     results = map(models, broom::tidy),
@@ -252,6 +252,7 @@ logval = weather_boot_estimates %>%
 rsquared + logval
 ```
 
+
 #### Quantiles
 
 ```{r}
@@ -263,9 +264,12 @@ weather_boot_quantiles = weather_boot_estimates %>%
     ci_upper_log = quantile(log_val, 0.075)
   )
 
-knitr::kable(weather_boot_quantiles)
+#knitr::kable(weather_boot_quantiles)
 ```
 
+We can see these bootstrap values for rsquared center around 0.91, with a seemingly normal curve, possibly skewed to the left, with a greater density of values centered at 0.91. The confidence interval for bootstrap rsquared values are `r pull(weather_boot_quantiles(ci_lower_r))` to `r pull(weather_boot_quantiles(ci_upper_r))`.  
+
+For the log of intercept * slope, we also see a  normal distribution of bootstrap values, centered around 2.025.  Again we see a greater density around the center values. The confidence interval for bootstrap log(slope * intercept) values are `r pull(weather_boot_quantiles(ci_lower_log))` to `r pull(weather_boot_quantiles(ci_upper_log))`.
 
 
 
