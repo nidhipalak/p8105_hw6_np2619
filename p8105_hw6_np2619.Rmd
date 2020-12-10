@@ -210,6 +210,41 @@ example2 = lm(bwt ~ bhead * blength * babysex, data = birthweight) %>%
   broom::tidy() %>% 
   knitr::kable()
 ```
+The p-values for these variables were <0.05, implying significance. 
+
+#### Cross Validation
+
+```{r}
+cv_df = 
+  crossv_mc(birthweight, 500)
+
+cv_df = cv_df %>% 
+  mutate(
+    mymod_mod = map(.x = train, ~lm(bwt ~ babysex + fincome + wtgain + smoken, data = .x)),
+    example1_mod = map(.x = train, ~lm(bwt ~ blength + gaweeks, data = .x)),
+    example2_mod = map(.x = train, ~lm(bwt ~ bhead * blength * babysex, data = .x))) %>% 
+  mutate(
+    rmse_mymod = map2(.x = mymod_mod, .y = test, ~rmse(model = .x, data = .y)),
+    rmse_example1 = map2(.x = example1_mod, .y = test, ~rmse(model = .x, data = .y)),
+    rmse_example2 = map2(.x = example2_mod, .y = test, ~rmse(model = .x, data = .y))
+  ) %>% 
+  unnest(rmse_mymod, rmse_example1, rmse_example2)
+```
+
+#### Plot RMSE
+
+```{r}
+cv_df %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "model",
+    values_to = "rmse",
+    names_prefix = "rmse_"
+  ) %>% 
+  ggplot(aes(x = model, y = rmse)) +
+  geom_violin()
+```
 
 
 ## Problem 3
