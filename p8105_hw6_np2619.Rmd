@@ -173,28 +173,44 @@ scatter + violin
 ```
 The residuals on the scatter look good. They are random, there aren't any clear patterns or clusters.  From the violin plot, we do see that this holds pretty true, with some residuals on the lower and upper extremes.  But, nobody (baby) is perfect.
 
+#### Stepwise regression to get model. 
+I used stepwise in both directions.
+```{r}
+step_mod = step(my_mod, direction = "both")
+```
 
 
-
-
-
-#### Explore c
+#### Explore compared models
 
 ```{r}
-birthweight %>% 
+length = birthweight %>% 
   ggplot(aes(x = blength, y = bwt)) + 
   geom_point(aes(alpha = 0.3))
 
-birthweight %>% 
+gest = birthweight %>% 
   ggplot(aes(x = gaweeks, y = bwt)) + 
   geom_point(aes(alpha = 0.3))
-```
 
-#### Fit models
+head = birthweight %>% 
+  ggplot(aes(x = bhead, y = bwt)) + 
+  geom_point(aes(alpha = 0.3))
+
+length + gest + head
+```
+These plots definitly show a more linear resemblance than the previous visualizations. 
+
+#### Fit given models
 
 ```{r}
+example1 = lm(bwt ~ blength + gaweeks, data = birthweight) %>% 
+  broom::tidy() %>% 
+  knitr::kable()
 
+example2 = lm(bwt ~ bhead * blength * babysex, data = birthweight) %>%
+  broom::tidy() %>% 
+  knitr::kable()
 ```
+
 
 ## Problem 3
 
