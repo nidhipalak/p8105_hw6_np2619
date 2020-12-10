@@ -255,12 +255,15 @@ rsquared + logval
 #### Quantiles
 
 ```{r}
-weather_boot_ci = weather_boot_results %>% 
-  select(num, term, estimate, r.squared) %>% 
+weather_boot_quantiles = weather_boot_estimates %>% 
   summarize(
-    ci_lower = quantile(r.squared, 0.025),
-    ci_upper = quantile(r.squared, 0.075)
+    ci_lower_r = quantile(r.squared, 0.025),
+    ci_upper_r = quantile(r.squared, 0.075),
+    ci_lower_log = quantile(log_val, 0.025),
+    ci_upper_log = quantile(log_val, 0.075)
   )
+
+knitr::kable(weather_boot_quantiles)
 ```
 
 
